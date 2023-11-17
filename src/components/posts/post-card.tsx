@@ -1,5 +1,6 @@
 import { Button, Card } from "flowbite-react";
 import React from "react";
+import Modal from "../modal";
 
 // TODO::Must accept a post with posttype from PostModel
 const PostCard: React.FC = () => {
@@ -23,7 +24,7 @@ const PostCard: React.FC = () => {
       </p>
       <div className="flex gap-2">
         <Button color="purple">View</Button>
-        <Button color="success">Edit</Button>
+        <Modal color="success" value="Edit" edit={true} />
         <Button color="failure">Delete</Button>
       </div>
     </Card>
