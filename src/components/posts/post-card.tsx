@@ -5,9 +5,9 @@ import React from "react";
 const PostCard: React.FC = () => {
   return (
     <Card
-      className="max-w-sm"
       imgAlt="Meaningful alt text for an image that is not purely decorative"
       imgSrc="https://www.flowbite-react.com/images/blog/image-1.jpg"
+      horizontal
     >
       <div>
         <span className="text-gray-400 text-xs">

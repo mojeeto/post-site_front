@@ -5,7 +5,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <React.Fragment>
       <Navbar />
-      <main className="px-5">{children}</main>
+      <main className="mx-auto container">{children}</main>
     </React.Fragment>
   );
 };
