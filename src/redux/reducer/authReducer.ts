@@ -1,12 +1,15 @@
 import { createReducer } from "@reduxjs/toolkit";
 import { IAuth, setIsAuth } from "../action/authAction";
 
-const initialStateAuth = {
-  isAuth: true,
-  token: null,
-} as IAuth;
+const getInitalStateAuth = (): IAuth => {
+  const token = localStorage.getItem("token");
+  return {
+    isAuth: token !== null,
+    token: token,
+  };
+};
 
-const authReducer = createReducer(initialStateAuth, (builder) => {
+const authReducer = createReducer(getInitalStateAuth(), (builder) => {
   builder.addCase(setIsAuth, (_, action) => {
     return {
       isAuth: action.payload.isAuth,

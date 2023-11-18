@@ -1,14 +1,28 @@
-import { useSelector } from "react-redux";
-import PostCardList from "./components/posts/post-card-list";
-import MainLayout from "./layout/main-layout";
-import { RootState } from "./redux";
+import React, { useEffect } from "react";
+import { Outlet as Children } from "react-router-dom";
+import Navbar from "./components/navbar";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "./redux";
+import { setIsAuth } from "./redux/action/authAction";
 
 function App() {
-  const auth = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    dispatch(
+      setIsAuth({
+        isAuth: token !== null,
+        token: token,
+      })
+    );
+  }, []);
   return (
-    <MainLayout>
-      {auth.isAuth ? <PostCardList /> : <div>Please Login first</div>}
-    </MainLayout>
+    <React.Fragment>
+      <Navbar />
+      <main className="mx-auto container">
+        <Children />
+      </main>
+    </React.Fragment>
   );
 }
 
