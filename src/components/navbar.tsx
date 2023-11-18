@@ -2,10 +2,11 @@ import { Navbar as NavbarFlowbite } from "flowbite-react";
 import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const auth = useSelector((state: RootState) => state.auth);
+  const { pathname } = useLocation();
   return (
     <NavbarFlowbite className="p-5">
       <NavbarFlowbite.Brand href="https://flowbite-react.com">
@@ -17,11 +18,20 @@ const Navbar: React.FC = () => {
       <NavbarFlowbite.Collapse>
         {auth.isAuth ? (
           <>
-            <Link className="text-purple-500 text-xl md:text-sm" to="/">
+            <Link
+              className={`text-xl md:text-sm ${
+                pathname === "/" ? "text-purple-500" : "hover:text-purple-400"
+              }`}
+              to="/"
+            >
               Posts
             </Link>
             <Link
-              className="hover:text-purple-400 text-xl md:text-sm"
+              className={`text-xl md:text-sm ${
+                pathname === "/logout"
+                  ? "text-purple-500"
+                  : "hover:text-purple-400"
+              }`}
               to="/logout"
             >
               Logout
@@ -30,13 +40,21 @@ const Navbar: React.FC = () => {
         ) : (
           <>
             <Link
-              className="hover:text-purple-400 text-xl md:text-sm"
+              className={`text-xl md:text-sm ${
+                pathname === "/login"
+                  ? "text-purple-500"
+                  : "hover:text-purple-400"
+              }`}
               to="/login"
             >
               Login
             </Link>
             <Link
-              className="hover:text-purple-400 text-xl md:text-sm"
+              className={`text-xl md:text-sm ${
+                pathname === "/signup"
+                  ? "text-purple-500"
+                  : "hover:text-purple-400"
+              }`}
               to="/signup"
             >
               Signup
