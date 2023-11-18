@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   FileInput,
@@ -14,14 +14,44 @@ const Modal: React.FC<{
   edit?: boolean;
 }> = ({ color = "blue", value = "undefined", edit = false }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
-  // TODO:: Add States for handling custom form datas in modal
+  const [title, setTitle] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [image, setImage] = useState<string | ArrayBuffer | null>(null);
 
   const toggleModal = () => {
     setShowModal((state) => !state);
     if (!showModal) {
-      // TODO:: clear all states
+      setImageFile(null);
+      setImage(null);
+      setTitle("");
+      setContent("");
     }
   };
+
+  const onChangeFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target;
+    if (files) {
+      setImageFile(files[0]);
+    }
+  };
+
+  useEffect(() => {
+    let reader: FileReader | null = null;
+    if (imageFile) {
+      reader = new FileReader();
+      reader.readAsDataURL(imageFile);
+      reader.onload = () => {
+        reader && setImage(reader.result);
+      };
+    }
+    return () => {
+      if (reader) {
+        reader.abort();
+        setImage(null);
+      }
+    };
+  }, [imageFile]);
 
   return (
     <>
@@ -36,28 +66,43 @@ const Modal: React.FC<{
           <div className="space-y-6">
             <div>
               <Label htmlFor="title" value="Title" className="text-md" />
-              <TextInput id="title" required />
-            </div>
-            <div>
-              <Label htmlFor="image" value="Image" className="text-md" />
-              <FileInput id="image" required />
-              {/** Create state to preview the image */}
-              <img
-                src="https://www.flowbite-react.com/images/blog/image-1.jpg"
-                width={300}
-                className="pt-5"
+              <TextInput
+                id="title"
+                onChange={(e) => setTitle(e.target.value)}
+                required
               />
             </div>
             <div>
+              <Label htmlFor="image" value="Image" className="text-md" />
+              <FileInput id="image" onChange={onChangeFileInput} required />
+              <div className="pt-5">
+                {image ? (
+                  <img src={`${image}`} width={150} />
+                ) : (
+                  "Please select a image"
+                )}
+              </div>
+            </div>
+            <div>
               <Label htmlFor="content" value="Content" className="text-md" />
-              <Textarea id="content" rows={2} required />
+              <Textarea
+                id="content"
+                rows={2}
+                onChange={(e) => setContent(e.target.value)}
+                required
+              />
             </div>
           </div>
           <div className="flex pt-5 gap-5">
             <Button color="failure" onClick={toggleModal}>
               Cancel
             </Button>
-            <Button color={edit ? "purple" : "success"} disabled>
+            <Button
+              color={edit ? "purple" : "success"}
+              disabled={
+                title === "" || content === "" || (image === null && !edit)
+              }
+            >
               {edit ? "Update" : "Save"}
             </Button>
           </div>
