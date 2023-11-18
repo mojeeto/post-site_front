@@ -2,7 +2,7 @@ import { createReducer } from "@reduxjs/toolkit";
 import { IAuth, setIsAuth } from "../action/authAction";
 
 const initialStateAuth = {
-  isAuth: false,
+  isAuth: true,
   token: null,
 } as IAuth;
 

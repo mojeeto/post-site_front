@@ -1,11 +1,14 @@
 import React from "react";
 import Navbar from "../components/navbar";
+import { Outlet as Children } from "react-router-dom";
 
-const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const MainLayout: React.FC = () => {
   return (
     <React.Fragment>
       <Navbar />
-      <main className="mx-auto container">{children}</main>
+      <main className="mx-auto container">
+        <Children />
+      </main>
     </React.Fragment>
   );
 };

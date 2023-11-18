@@ -2,6 +2,7 @@ import { Navbar as NavbarFlowbite } from "flowbite-react";
 import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux";
+import { Link } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const auth = useSelector((state: RootState) => state.auth);
@@ -16,21 +17,30 @@ const Navbar: React.FC = () => {
       <NavbarFlowbite.Collapse>
         {auth.isAuth ? (
           <>
-            <a className="text-purple-500 text-xl md:text-sm" href="#">
+            <Link className="text-purple-500 text-xl md:text-sm" to="/">
               Posts
-            </a>
-            <a className="hover:text-purple-400 text-xl md:text-sm" href="#">
+            </Link>
+            <Link
+              className="hover:text-purple-400 text-xl md:text-sm"
+              to="/logout"
+            >
               Logout
-            </a>
+            </Link>
           </>
         ) : (
           <>
-            <a className="hover:text-purple-400 text-xl md:text-sm" href="#">
+            <Link
+              className="hover:text-purple-400 text-xl md:text-sm"
+              to="/login"
+            >
               Login
-            </a>
-            <a className="hover:text-purple-400 text-xl md:text-sm" href="#">
+            </Link>
+            <Link
+              className="hover:text-purple-400 text-xl md:text-sm"
+              to="/signup"
+            >
               Signup
-            </a>
+            </Link>
           </>
         )}
       </NavbarFlowbite.Collapse>
