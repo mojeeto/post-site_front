@@ -23,7 +23,6 @@ const LoginPage: React.FC = () => {
       <Button color="purple" type="submit">
         Login
       </Button>
-      <Label>Forgot Password!</Label>
     </form>
   );
 };
