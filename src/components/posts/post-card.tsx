@@ -1,9 +1,33 @@
 import { Button, Card } from "flowbite-react";
 import React from "react";
 import Modal from "../modal";
-import { PostType } from "../../repo/postRepositoy";
+import { PostType, deletePost } from "../../repo/postRepositoy";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../redux";
+import { removePostAction } from "../../redux/action/postAction";
+import { addToast } from "../../redux/action/toastAction";
 
-const PostCard: React.FC<{ post?: PostType }> = ({ post }) => {
+const PostCard: React.FC<{ post: PostType }> = ({ post }) => {
+  const { token } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+
+  const onDeletePost = async () => {
+    const response = await deletePost(post._id, token!);
+    if (!response) {
+      dispatch(
+        addToast({ type: "Error", message: "Error 500, please try again!" })
+      );
+      return;
+    }
+    const status = response.status;
+    if (status !== 200) {
+      dispatch(addToast({ type: "Error", message: response.data.message }));
+      return;
+    }
+    dispatch(addToast({ type: "Success", message: response.data.message }));
+    dispatch(removePostAction(post));
+  };
+
   return (
     post && (
       <Card
@@ -25,7 +49,9 @@ const PostCard: React.FC<{ post?: PostType }> = ({ post }) => {
         </p>
         <div className="flex gap-2">
           <Modal color="success" value="Edit" edit={true} post={post} />
-          <Button color="failure">Delete</Button>
+          <Button onClick={onDeletePost} color="failure">
+            Delete
+          </Button>
         </div>
       </Card>
     )

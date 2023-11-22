@@ -51,9 +51,11 @@ const PostCardList: React.FC = () => {
         <Modal value="Add Post" color="purple" />
       </div>
       <div className="flex flex-col items-center gap-5 px-5 md:px-2.5 pb-10">
-        {posts.map((post, index) => {
-          return <PostCard post={post} key={index} />;
-        })}
+        {posts.length > 0
+          ? posts.map((post, index) => {
+              return <PostCard post={post} key={index} />;
+            })
+          : "No Post Founded!"}
       </div>
     </div>
   ) : (
