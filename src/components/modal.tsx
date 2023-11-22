@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { FormEventHandler, useEffect, useState } from "react";
 import {
   Button,
   FileInput,
@@ -7,17 +7,34 @@ import {
   TextInput,
   Textarea,
 } from "flowbite-react";
+import ValidationMessages, {
+  ValidationMessageItemType,
+  makeValidationResponse,
+} from "./errors/validation-errors";
+import { putPost } from "../repo/postRepositoy";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux";
+import { addToast } from "../redux/action/toastAction";
+import { useNavigate } from "react-router-dom";
+import { addPostAction } from "../redux/action/postAction";
 
 const Modal: React.FC<{
   value?: string;
   color?: "purple" | "blue" | "success";
   edit?: boolean;
-}> = ({ color = "blue", value = "undefined", edit = false }) => {
+  postId?: string;
+}> = ({ color = "blue", value = "undefined", edit = false, postId = null }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [image, setImage] = useState<string | ArrayBuffer | null>(null);
+  const [validationMessages, setValidationMessages] =
+    useState<ValidationMessageItemType | null>(null);
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { token } = useSelector((state: RootState) => state.auth);
+  const navigate = useNavigate();
 
   const toggleModal = () => {
     setShowModal((state) => !state);
@@ -45,13 +62,76 @@ const Modal: React.FC<{
         reader && setImage(reader.result);
       };
     }
+
+    if (!token) {
+      navigate("/login");
+      dispatch(
+        addToast({
+          type: "Error",
+          message: "Please login first!",
+        })
+      );
+    }
+
     return () => {
       if (reader) {
         reader.abort();
         setImage(null);
       }
     };
-  }, [imageFile]);
+  }, [imageFile, token]);
+
+  const addPost: FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    if (title && content && imageFile) {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("postImage", imageFile);
+      formData.append("content", content);
+      const response = await putPost(formData, token!);
+      if (!response) {
+        dispatch(
+          addToast({ type: "Error", message: "Error 500, please try again." })
+        );
+        setLoading(false);
+        return;
+      }
+      const status = response.status;
+      if (status !== 201) {
+        if (status !== 403) {
+          dispatch(
+            addToast({ type: "Error", message: "Error 500, please try again." })
+          );
+          setLoading(false);
+          return;
+        }
+        const validationResponse = response.data.validationReponse;
+        if (validationResponse) {
+          dispatch(addToast({ type: "Error", message: "Validation Error!" }));
+          setValidationMessages(makeValidationResponse(validationResponse));
+        } else {
+          dispatch(
+            addToast({
+              type: "Error",
+              message: "Forbbiden 403 Error!, Please Authenticate first!",
+            })
+          );
+        }
+      } else {
+        dispatch(addPostAction(response.data.post));
+        dispatch(
+          addToast({
+            type: "Success",
+            message: response.data.message,
+          })
+        );
+        toggleModal();
+      }
+
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -63,7 +143,10 @@ const Modal: React.FC<{
           {edit ? "Update Post" : "Create Post"}
         </ModalFlowbite.Header>
         <ModalFlowbite.Body>
-          <div className="space-y-6">
+          <form className="space-y-6" onSubmit={addPost}>
+            {validationMessages && (
+              <ValidationMessages validationMessages={validationMessages} />
+            )}
             <div>
               <Label htmlFor="title" value="Title" className="text-md" />
               <TextInput
@@ -92,20 +175,24 @@ const Modal: React.FC<{
                 required
               />
             </div>
-          </div>
-          <div className="flex pt-5 gap-5">
-            <Button color="failure" onClick={toggleModal}>
-              Cancel
-            </Button>
-            <Button
-              color={edit ? "purple" : "success"}
-              disabled={
-                title === "" || content === "" || (image === null && !edit)
-              }
-            >
-              {edit ? "Update" : "Save"}
-            </Button>
-          </div>
+            <div className="flex pt-5 gap-5">
+              <Button color="failure" onClick={toggleModal}>
+                Cancel
+              </Button>
+              <Button
+                color={edit ? "purple" : "success"}
+                disabled={
+                  title === "" ||
+                  content === "" ||
+                  (image === null && !edit) ||
+                  loading
+                }
+                type="submit"
+              >
+                {edit ? "Update" : "Save"}
+              </Button>
+            </div>
+          </form>
         </ModalFlowbite.Body>
       </ModalFlowbite>
     </>

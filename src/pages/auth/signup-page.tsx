@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux";
 import { addToast } from "../../redux/action/toastAction";
-import { registerNewUser } from "../../repo/auth/authRepository";
+import { registerNewUser } from "../../repo/authRepository";
 import ValidationMessages, {
   ValidationMessageItemType,
   makeValidationResponse,

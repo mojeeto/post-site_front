@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import axios from "../../util/axios";
+import axios from "../util/axios";
 
 export const registerNewUser = async (data: FormData | object) => {
   try {

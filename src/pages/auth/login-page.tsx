@@ -1,6 +1,6 @@
 import { Button, Label, TextInput } from "flowbite-react";
 import { FormEventHandler, useState } from "react";
-import { loginUser } from "../../repo/auth/authRepository";
+import { loginUser } from "../../repo/authRepository";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux";
 import { addToast } from "../../redux/action/toastAction";
@@ -32,6 +32,7 @@ const LoginPage: React.FC = () => {
             message: "Error 500, please try again later.",
           })
         );
+        setLoading(false);
         return;
       }
       const status = response.status;
