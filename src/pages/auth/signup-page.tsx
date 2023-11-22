@@ -7,6 +7,7 @@ import { registerNewUser } from "../../repo/auth/authRepository";
 import ValidationMessages, {
   ValidationMessageItemType,
 } from "../../components/errors/validation-errors";
+import { useNavigate } from "react-router-dom";
 
 const SignUpPage: React.FC = () => {
   const [name, setName] = useState("");
@@ -17,6 +18,7 @@ const SignUpPage: React.FC = () => {
   const [validationMessages, setValidationMessages] =
     useState<ValidationMessageItemType | null>(null);
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
   const submitForm: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
@@ -29,11 +31,19 @@ const SignUpPage: React.FC = () => {
         password,
         repeatpassword,
       });
-      if (!response) throw new Error("Error while getting response");
+      if (!response) {
+        dispatch(
+          addToast({
+            message: "Error 500, Please try again later.",
+            type: "Error",
+          })
+        );
+        return setLoading(false);
+      }
       const status = response.status;
       if (status !== 201) {
         dispatch(addToast({ type: "Error", message: "User not created!" }));
-        if (status !== 403) return;
+        if (status !== 403) throw new Error("Error 500");
         const validationResponse = response.data.validationErrors;
         if (!validationResponse) return;
         validationResponse.map(
@@ -54,7 +64,13 @@ const SignUpPage: React.FC = () => {
         );
       } else {
         setValidationMessages(null);
-        dispatch(addToast({ type: "Success", message: "User created!" }));
+        dispatch(
+          addToast({
+            type: "Success",
+            message: "User created!, Please Sign-in.",
+          })
+        );
+        navigate("/login");
       }
       setLoading(false);
     }

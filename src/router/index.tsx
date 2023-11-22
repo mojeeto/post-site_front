@@ -14,6 +14,7 @@ const router = createBrowserRouter([
     children: [
       {
         element: <IsAuth />,
+        errorElement: <div>Error 500</div>,
         children: [
           {
             path: "/",
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
       },
       {
         element: <IsNotAuth />,
+        errorElement: <div>Error 500</div>,
         children: [
           {
             path: "login",
