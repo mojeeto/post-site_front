@@ -4,6 +4,9 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux";
 import { addToast } from "../../redux/action/toastAction";
 import { registerNewUser } from "../../repo/auth/authRepository";
+import ValidationMessages, {
+  ValidationMessageItemType,
+} from "../../components/errors/validation-errors";
 
 const SignUpPage: React.FC = () => {
   const [name, setName] = useState("");
@@ -11,12 +14,15 @@ const SignUpPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [repeatpassword, setRepeatPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [validationMessages, setValidationMessages] =
+    useState<ValidationMessageItemType | null>(null);
   const dispatch = useDispatch<AppDispatch>();
 
   const submitForm: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     if (name && email && password && repeatpassword) {
       setLoading(true);
+      setValidationMessages(null);
       const response = await registerNewUser({
         name,
         email,
@@ -27,8 +33,27 @@ const SignUpPage: React.FC = () => {
       const status = response.status;
       if (status !== 201) {
         dispatch(addToast({ type: "Error", message: "User not created!" }));
-        return;
+        if (status !== 403) return;
+        const validationResponse = response.data.validationErrors;
+        if (!validationResponse) return;
+        validationResponse.map(
+          (validationObj: { msg: string; path: string }) => {
+            setValidationMessages((state) => {
+              if (!state)
+                return {
+                  [validationObj.path]: [validationObj.msg],
+                };
+              if (!state[validationObj.path]) {
+                state[validationObj.path] = [validationObj.msg];
+                return state;
+              }
+              state[validationObj.path].push(validationObj.msg);
+              return state;
+            });
+          }
+        );
       } else {
+        setValidationMessages(null);
         dispatch(addToast({ type: "Success", message: "User created!" }));
       }
       setLoading(false);
@@ -40,6 +65,9 @@ const SignUpPage: React.FC = () => {
       className="flex max-w-md flex-col gap-4 mx-auto px-10"
       onSubmit={submitForm}
     >
+      {validationMessages && (
+        <ValidationMessages validationMessages={validationMessages} />
+      )}
       <div>
         <div className="mb-2 block">
           <Label htmlFor="name" value="Your Name" />
