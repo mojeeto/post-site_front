@@ -6,6 +6,7 @@ import { addToast } from "../../redux/action/toastAction";
 import { registerNewUser } from "../../repo/auth/authRepository";
 import ValidationMessages, {
   ValidationMessageItemType,
+  makeValidationResponse,
 } from "../../components/errors/validation-errors";
 import { useNavigate } from "react-router-dom";
 
@@ -46,22 +47,7 @@ const SignUpPage: React.FC = () => {
         if (status !== 403) throw new Error("Error 500");
         const validationResponse = response.data.validationErrors;
         if (!validationResponse) return;
-        validationResponse.map(
-          (validationObj: { msg: string; path: string }) => {
-            setValidationMessages((state) => {
-              if (!state)
-                return {
-                  [validationObj.path]: [validationObj.msg],
-                };
-              if (!state[validationObj.path]) {
-                state[validationObj.path] = [validationObj.msg];
-                return state;
-              }
-              state[validationObj.path].push(validationObj.msg);
-              return state;
-            });
-          }
-        );
+        setValidationMessages(makeValidationResponse(validationResponse));
       } else {
         setValidationMessages(null);
         dispatch(

@@ -4,6 +4,31 @@ export type ValidationMessageItemType = {
   [key: string]: string[];
 };
 
+const isValidationMessage = (
+  obj: any
+): obj is { path: string; msg: string } => {
+  return obj && obj.path && obj.msg;
+};
+
+export const makeValidationResponse = (validationError: object[]) => {
+  let result: ValidationMessageItemType | null = null;
+  validationError.forEach((validation) => {
+    if (isValidationMessage(validation)) {
+      if (!result) {
+        result = { [validation.path]: [validation.msg] };
+        return;
+      }
+      if (!result[validation.path]) {
+        result[validation.path] = [validation.msg];
+        return;
+      }
+      result[validation.path].push(validation.msg);
+      return;
+    }
+  });
+  return result;
+};
+
 const ValidationMessages: React.FC<{
   validationMessages: ValidationMessageItemType;
 }> = ({ validationMessages }) => {
