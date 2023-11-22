@@ -24,8 +24,7 @@ const PostCard: React.FC<{ post?: PostType }> = ({ post }) => {
           {post.content}
         </p>
         <div className="flex gap-2">
-          <Button color="purple">View</Button>
-          <Modal color="success" value="Edit" edit={true} postId={post._id} />
+          <Modal color="success" value="Edit" edit={true} post={post} />
           <Button color="failure">Delete</Button>
         </div>
       </Card>

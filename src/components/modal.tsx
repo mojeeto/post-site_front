@@ -11,7 +11,7 @@ import ValidationMessages, {
   ValidationMessageItemType,
   makeValidationResponse,
 } from "./errors/validation-errors";
-import { putPost } from "../repo/postRepositoy";
+import { PostType, patchPost, putPost } from "../repo/postRepositoy";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../redux";
 import { addToast } from "../redux/action/toastAction";
@@ -22,13 +22,17 @@ const Modal: React.FC<{
   value?: string;
   color?: "purple" | "blue" | "success";
   edit?: boolean;
-  postId?: string;
-}> = ({ color = "blue", value = "undefined", edit = false, postId = null }) => {
+  post?: PostType;
+}> = ({ color = "blue", value = "undefined", edit = false, post = null }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>(post && edit ? post.title : "");
+  const [content, setContent] = useState<string>(
+    post && edit ? post.content : ""
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [image, setImage] = useState<string | ArrayBuffer | null>(null);
+  const [image, setImage] = useState<string | ArrayBuffer | null>(
+    post && edit ? "http://192.168.1.100:8080/" + post.imagePath : null
+  );
   const [validationMessages, setValidationMessages] =
     useState<ValidationMessageItemType | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,9 +40,19 @@ const Modal: React.FC<{
   const { token } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
 
+  if (!token) {
+    navigate("/login");
+    dispatch(
+      addToast({
+        type: "Error",
+        message: "Please login first!",
+      })
+    );
+  }
+
   const toggleModal = () => {
     setShowModal((state) => !state);
-    if (!showModal) {
+    if (!showModal && !edit && !post) {
       setImageFile(null);
       setImage(null);
       setTitle("");
@@ -63,16 +77,6 @@ const Modal: React.FC<{
       };
     }
 
-    if (!token) {
-      navigate("/login");
-      dispatch(
-        addToast({
-          type: "Error",
-          message: "Please login first!",
-        })
-      );
-    }
-
     return () => {
       if (reader) {
         reader.abort();
@@ -83,13 +87,15 @@ const Modal: React.FC<{
 
   const addPost: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    if (title && content && imageFile) {
+    if (title && content && (imageFile || (edit && post))) {
       setLoading(true);
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("postImage", imageFile);
+      if (imageFile) formData.append("postImage", imageFile);
       formData.append("content", content);
-      const response = await putPost(formData, token!);
+      let response = null;
+      if (!edit) response = await putPost(formData, token!);
+      else if (post) response = await patchPost(formData, post._id, token!);
       if (!response) {
         dispatch(
           addToast({ type: "Error", message: "Error 500, please try again." })
@@ -98,7 +104,25 @@ const Modal: React.FC<{
         return;
       }
       const status = response.status;
-      if (status !== 201) {
+      if (status === 201) {
+        dispatch(addPostAction(response.data.post));
+        dispatch(
+          addToast({
+            type: "Success",
+            message: response.data.message,
+          })
+        );
+        toggleModal();
+      } else if (status === 200) {
+        dispatch(addPostAction(response.data.post));
+        dispatch(
+          addToast({
+            type: "Success",
+            message: response.data.message,
+          })
+        );
+        toggleModal();
+      } else {
         if (status !== 403) {
           dispatch(
             addToast({ type: "Error", message: "Error 500, please try again." })
@@ -118,15 +142,6 @@ const Modal: React.FC<{
             })
           );
         }
-      } else {
-        dispatch(addPostAction(response.data.post));
-        dispatch(
-          addToast({
-            type: "Success",
-            message: response.data.message,
-          })
-        );
-        toggleModal();
       }
 
       setLoading(false);
@@ -151,13 +166,18 @@ const Modal: React.FC<{
               <Label htmlFor="title" value="Title" className="text-md" />
               <TextInput
                 id="title"
+                value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
             <div>
               <Label htmlFor="image" value="Image" className="text-md" />
-              <FileInput id="image" onChange={onChangeFileInput} required />
+              <FileInput
+                id="image"
+                onChange={onChangeFileInput}
+                required={!edit}
+              />
               <div className="pt-5">
                 {image ? (
                   <img src={`${image}`} width={150} />
@@ -171,6 +191,7 @@ const Modal: React.FC<{
               <Textarea
                 id="content"
                 rows={2}
+                value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
               />
