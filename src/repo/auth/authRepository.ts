@@ -11,11 +11,12 @@ export const registerNewUser = async (data: FormData | object) => {
   }
 };
 
-export const loginNewUser = async (data: FormData) => {
+export const loginUser = async (data: FormData | object) => {
   try {
     const response = await axios.post("/login", data);
-    return response.data;
+    return response;
   } catch (err) {
+    if (isAxiosError(err)) return err.response;
     throw new Error("Error while login");
   }
 };
