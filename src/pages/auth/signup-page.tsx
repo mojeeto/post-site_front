@@ -1,15 +1,9 @@
 import { Button, Label, TextInput } from "flowbite-react";
-import { registerNewUser } from "./authRepository";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux";
-import {
-  addMessagError,
-  addValidationErrorMessage,
-  removeValidationError,
-} from "../../redux/action/errorAction";
-import { ValidationErrorsMessage } from "../errors";
-import { useNavigate } from "react-router-dom";
+import { addToast } from "../../redux/action/toastAction";
+import { registerNewUser } from "../../repo/auth/authRepository";
 
 const SignUpPage: React.FC = () => {
   const [name, setName] = useState("");
@@ -18,53 +12,24 @@ const SignUpPage: React.FC = () => {
   const [repeatpassword, setRepeatPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
-
-  const clearInput = () => {
-    setName("");
-    setEmail("");
-    setPassword("");
-    setRepeatPassword("");
-  };
 
   const submitForm: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     if (name && email && password && repeatpassword) {
       setLoading(true);
-      dispatch(removeValidationError());
       const response = await registerNewUser({
         name,
         email,
         password,
         repeatpassword,
       });
-      if (response) {
-        if (response.status === 201) {
-          navigate("/login");
-          dispatch(
-            addMessagError({
-              message: "User created! please sign-in!",
-              type: "Success",
-            })
-          );
-          clearInput();
-        } else {
-          dispatch(
-            addMessagError({ type: "Error", message: response.data.message })
-          );
-          if (response.data.message === "Validation Error") {
-            response.data.validationErrors.map(
-              (validation: { msg: string; path: string }) => {
-                dispatch(
-                  addValidationErrorMessage({
-                    msg: validation.msg,
-                    name: validation.path,
-                  })
-                );
-              }
-            );
-          }
-        }
+      if (!response) throw new Error("Error while getting response");
+      const status = response.status;
+      if (status !== 201) {
+        dispatch(addToast({ type: "Error", message: "User not created!" }));
+        return;
+      } else {
+        dispatch(addToast({ type: "Success", message: "User created!" }));
       }
       setLoading(false);
     }
@@ -75,7 +40,6 @@ const SignUpPage: React.FC = () => {
       className="flex max-w-md flex-col gap-4 mx-auto px-10"
       onSubmit={submitForm}
     >
-      <ValidationErrorsMessage />
       <div>
         <div className="mb-2 block">
           <Label htmlFor="name" value="Your Name" />

@@ -1,17 +1,16 @@
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux";
 import { Toast } from "flowbite-react";
 import { HiCheck, HiExclamation, HiX } from "react-icons/hi";
-import React from "react";
-import { removeMessageError } from "../../redux/action/errorAction";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../redux";
+import { removeToast } from "../redux/action/toastAction";
 
-export const ErrorMessage: React.FC = () => {
-  const { errorMessage } = useSelector((state: RootState) => state.errors);
+const ToastMessage: React.FC = () => {
+  const toastMessageContent = useSelector((state: RootState) => state.toast);
   const dispatch = useDispatch<AppDispatch>();
   return (
-    errorMessage.length > 0 && (
+    toastMessageContent.length > 0 && (
       <div className="flex flex-col gap-5 fixed top-5 left-5 z-[101]">
-        {errorMessage.map(({ type, message }, index) => {
+        {toastMessageContent.map(({ type, message }, index) => {
           return (
             <Toast key={index}>
               {type === "Error" ? (
@@ -32,7 +31,7 @@ export const ErrorMessage: React.FC = () => {
               </div>
               <Toast.Toggle
                 onClick={() => {
-                  dispatch(removeMessageError({ type, message }));
+                  dispatch(removeToast({ type, message }));
                 }}
               />
             </Toast>
@@ -43,20 +42,4 @@ export const ErrorMessage: React.FC = () => {
   );
 };
 
-export const ValidationErrorsMessage: React.FC = () => {
-  const { validationErrors } = useSelector((state: RootState) => state.errors);
-  return (
-    validationErrors.length > 0 && (
-      <div className="flex flex-col border-red-600 border-2 bg-red-400 p-5 ">
-        {validationErrors.map((validationError, index) => {
-          return (
-            <p key={index} className="text-sm">
-              <span className="font-medium">{validationError.name}: </span>
-              {validationError.msg}
-            </p>
-          );
-        })}
-      </div>
-    )
-  );
-};
+export default ToastMessage;

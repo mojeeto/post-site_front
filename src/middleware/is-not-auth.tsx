@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
-import { RootState } from "../../redux";
+import { RootState } from "../redux";
 import { useEffect } from "react";
 
 const IsNotAuth: React.FC = () => {

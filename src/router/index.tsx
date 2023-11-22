@@ -1,10 +1,10 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import PostCardList from "../components/posts/post-card-list";
-import LoginPage from "../components/auth/login-page";
-import SignUpPage from "../components/auth/signup-page";
-import IsAuth from "../components/auth/is-auth";
-import IsNotAuth from "../components/auth/is-not-auth";
-import Logout from "../components/auth/logout";
+import LoginPage from "../pages/auth/login-page";
+import SignUpPage from "../pages/auth/signup-page";
+import IsAuth from "../middleware/is-auth";
+import IsNotAuth from "../middleware/is-not-auth";
+import Logout from "../pages/auth/logout";
 import App from "../App";
 
 const router = createBrowserRouter([
