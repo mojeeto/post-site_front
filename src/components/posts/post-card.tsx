@@ -32,7 +32,7 @@ const PostCard: React.FC<{ post: PostType }> = ({ post }) => {
     post && (
       <Card
         imgAlt="Meaningful alt text for an image that is not purely decorative"
-        imgSrc={`http://192.168.1.100:8080/${post.imagePath}`}
+        imgSrc={`http://192.168.1.100:3000/${post.imagePath}`}
         horizontal
       >
         <div>

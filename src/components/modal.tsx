@@ -31,7 +31,7 @@ const Modal: React.FC<{
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [image, setImage] = useState<string | ArrayBuffer | null>(
-    post && edit ? "http://192.168.1.100:8080/" + post.imagePath : null
+    post && edit ? "http://192.168.1.100:3000/" + post.imagePath : null
   );
   const [validationMessages, setValidationMessages] =
     useState<ValidationMessageItemType | null>(null);

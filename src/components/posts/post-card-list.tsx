@@ -7,7 +7,12 @@ import { AppDispatch, RootState } from "../../redux";
 import { useNavigate } from "react-router-dom";
 import { addToast } from "../../redux/action/toastAction";
 import { GenericAbortSignal } from "axios";
-import { addPostListAction } from "../../redux/action/postAction";
+import {
+  addPostAction,
+  addPostListAction,
+  removePostAction,
+} from "../../redux/action/postAction";
+import { io } from "socket.io-client";
 
 const PostCardList: React.FC = () => {
   const { token } = useSelector((state: RootState) => state.auth);
@@ -27,6 +32,17 @@ const PostCardList: React.FC = () => {
       } else {
         dispatch(addPostListAction(response.data.posts));
         setLoading(false);
+        const socket = io("http://192.168.1.100:3000");
+        socket.on("posts", (data) => {
+          const { action, post } = data;
+          if (action === "create") {
+            dispatch(addPostAction(post));
+          } else if (action === "update") {
+            dispatch(addPostAction(post));
+          } else if (action === "delete") {
+            dispatch(removePostAction(post));
+          }
+        });
       }
     };
     if (!token) {
